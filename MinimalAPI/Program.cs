@@ -34,16 +34,30 @@ app.MapGet("/equipment", async (Context context) =>
 
 app.MapPut("/equipment/{id:int}", async (int id, UpdateCommand command, Context context) =>
 {
-    var handler = new CommandHandler(context);
-    var result = await handler.Handle(id, command);
-    return result ? Results.NoContent() : Results.NotFound();
+    try
+    {
+        var handler = new CommandHandler(context);
+        await handler.Handle(id, command);
+        return Results.NoContent();
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
 });
 
 app.MapDelete("/equipment/{id:int}", async (int id, Context context) =>
 {
-    var handler = new CommandHandler(context);
-    var result = await handler.Handle(id);
-    return result ? Results.NoContent() : Results.NotFound();
+    try
+    {
+        var handler = new CommandHandler(context);
+        await handler.Handle(id);
+        return Results.NoContent();
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
 });
 
 app.Run();
