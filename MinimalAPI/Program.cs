@@ -41,14 +41,9 @@ app.MapPut("/equipment/{id:int}", async (int id, UpdateCommand command, Context 
 
 app.MapDelete("/equipment/{id:int}", async (int id, Context context) =>
 {
-    var equipment = await context.Equipments.FindAsync(id);
-    if (equipment is not null)
-    {
-        context.Equipments.Remove(equipment);
-        await context.SaveChangesAsync();
-        return Results.NoContent();
-    }
-    return Results.NotFound();
+    var handler = new CommandHandler(context);
+    var result = await handler.Handle(id);
+    return result ? Results.NoContent() : Results.NotFound();
 });
 
 app.Run();

@@ -56,5 +56,17 @@ namespace MinimalAPI.Handlers
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> Handle(int id)
+        {
+            var equipment = new Equipment { Id = id };
+
+            _context.Attach(equipment);
+            _context.Entry(equipment).State = EntityState.Deleted;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
