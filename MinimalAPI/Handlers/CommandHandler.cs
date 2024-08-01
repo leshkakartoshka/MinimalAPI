@@ -14,7 +14,7 @@ namespace MinimalAPI.Handlers
             _context = context;
         }
 
-        public async Task<int> Handle(CreateCommand command)
+        public async Task<int> Handle(UpdateCreateCommand command)
         {
             var equipment = new Equipment
             {
@@ -34,21 +34,17 @@ namespace MinimalAPI.Handlers
             return equipment.Id;
         }
 
-        public async Task Handle(int id, UpdateCommand command)
+        public async Task Handle(int id, UpdateCreateCommand command)
         {
-            var equipment = await _context.Equipments.Include(e => e.Parameters)
-                                                     .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (equipment == null)
-            {
-                throw new KeyNotFoundException($"Equipment with ID {id} not found.");
-            }
+            var equipment = new Equipment { Id = id };
+            _context.Attach(equipment);
 
             equipment.Name = command.Name;
             equipment.Description = command.Description;
             equipment.Code = command.Code;
 
-            _context.Parameters.RemoveRange(equipment.Parameters);
+            if(equipment.Parameters != null) _context.Parameters.RemoveRange(equipment.Parameters);
+
             equipment.Parameters = command.Parameters?.Select(p => new Parameters
             {
                 ParameterName = p.ParameterName,
@@ -63,12 +59,6 @@ namespace MinimalAPI.Handlers
         {
             var equipment = new Equipment { Id = id };
             _context.Attach(equipment);
-
-            var existingEquipment = await _context.Equipments.FindAsync(id);
-            if (existingEquipment == null)
-            {
-                throw new KeyNotFoundException($"Equipment with ID {id} not found.");
-            }
 
             _context.Entry(equipment).State = EntityState.Deleted;
             await _context.SaveChangesAsync();
